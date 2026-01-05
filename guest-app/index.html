@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="en" style="height: auto; min-height: 100%;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grand Luxe Hotel - Guest App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        @media (min-width: 768px) {
+            .sidebar-translate {
+                transform: translateX(0) !important;
+            }
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: { 50: '#f0f4f8', 100: '#d9e2ec', 500: '#1e3a5f', 600: '#152a47', 700: '#0d1b2a', 800: '#0a1628', 900: '#050d15' },
+                        gold: { 400: '#f4c542', 500: '#d4af37', 600: '#b8941f' }
+                    },
+                    fontFamily: { 'inter': ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-inter bg-gray-50" style="height: auto; min-height: 100%;" x-data="{
+    currentScreen: 'dashboard',
+    selectedRoom: null,
+    selectedService: null,
+    selectedFood: null,
+    cart: [],
+    bookingDates: { checkin: '', checkout: '' },
+    serviceBooking: { date: '', time: '' },
+    sidebarOpen: false,
+    
+    rooms: [
+        { id: 1, name: 'Deluxe King Room', type: 'Deluxe', price: 250, image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800&h=400&fit=crop', size: '35 m²', view: 'City view', guests: 2, bed: 'King Bed', amenities: ['Free WiFi', 'Smart TV', 'Mini Bar', 'Room Service', 'Air Conditioning'], available: true },
+        { id: 2, name: 'Executive Suite', type: 'Suite', price: 450, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&h=400&fit=crop', size: '55 m²', view: 'Ocean view', guests: 4, bed: '2 Beds', amenities: ['Free WiFi', 'Smart TV', 'Jacuzzi', 'Living Room', 'Kitchen', 'Balcony'], available: true },
+        { id: 3, name: 'Presidential Suite', type: 'Presidential', price: 850, image: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&h=400&fit=crop', size: '120 m²', view: 'Panoramic view', guests: 6, bed: '3 Beds', amenities: ['Free WiFi', 'Smart TV', 'Private Pool', 'Butler Service', 'Dining Room', 'Office'], available: true }
+    ],
+    
+    services: [
+        { id: 1, name: 'Housekeeping', icon: 'fa-broom', color: 'blue', price: 0, duration: '30 min', description: 'Professional room cleaning and tidying service' },
+        { id: 2, name: 'Spa & Massage', icon: 'fa-spa', color: 'pink', price: 120, duration: '90 min', description: 'Relaxing full body massage and spa treatment' },
+        { id: 3, name: 'Gym Access', icon: 'fa-dumbbell', color: 'red', price: 0, duration: 'All day', description: '24/7 access to state-of-the-art fitness center' },
+        { id: 4, name: 'Valet Parking', icon: 'fa-car', color: 'purple', price: 25, duration: 'Per day', description: 'Secure valet parking service for your vehicle' },
+        { id: 5, name: 'Pool Access', icon: 'fa-swimming-pool', color: 'cyan', price: 0, duration: 'All day', description: 'Access to rooftop infinity pool and lounge' },
+        { id: 6, name: 'WiFi Premium', icon: 'fa-wifi', color: 'indigo', price: 15, duration: 'Per day', description: 'High-speed premium internet connection' },
+        { id: 7, name: 'Airport Transfer', icon: 'fa-taxi', color: 'yellow', price: 80, duration: '45 min', description: 'Luxury car service to/from airport' },
+        { id: 8, name: 'Maintenance', icon: 'fa-wrench', color: 'orange', price: 0, duration: '20 min', description: 'Quick fix for any room issues' },
+        { id: 9, name: 'Laundry Service', icon: 'fa-tshirt', color: 'teal', price: 30, duration: '24 hours', description: 'Professional laundry and dry cleaning' },
+        { id: 10, name: 'Concierge', icon: 'fa-concierge-bell', color: 'green', price: 0, duration: 'Anytime', description: 'Personal assistance for reservations and bookings' },
+        { id: 11, name: 'Baby Sitting', icon: 'fa-baby', color: 'rose', price: 50, duration: 'Per hour', description: 'Professional childcare service' },
+        { id: 12, name: 'Pet Care', icon: 'fa-paw', color: 'amber', price: 40, duration: 'Per day', description: 'Pet sitting and walking service' }
+    ],
+    
+    foodMenu: [
+        { id: 1, name: 'Grilled Salmon', category: 'Main Course', price: 35, image: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=300&fit=crop', description: 'Fresh Atlantic salmon with herbs', rating: 4.8 },
+        { id: 2, name: 'Beef Tenderloin', category: 'Main Course', price: 45, image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop', description: 'Prime beef with truffle sauce', rating: 4.9 },
+        { id: 3, name: 'Caesar Salad', category: 'Appetizer', price: 15, image: 'https://images.unsplash.com/photo-1546793665-c74683f339c1?w=400&h=300&fit=crop', description: 'Classic Caesar with parmesan', rating: 4.6 },
+        { id: 4, name: 'Lobster Bisque', category: 'Soup', price: 18, image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&h=300&fit=crop', description: 'Creamy lobster soup', rating: 4.7 },
+        { id: 5, name: 'Chocolate Lava Cake', category: 'Dessert', price: 12, image: 'https://images.unsplash.com/photo-1624353365286-3f8d62daad51?w=400&h=300&fit=crop', description: 'Warm chocolate cake with ice cream', rating: 4.9 },
+        { id: 6, name: 'Tiramisu', category: 'Dessert', price: 10, image: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400&h=300&fit=crop', description: 'Classic Italian dessert', rating: 4.8 }
+    ],
+    
+    addToCart(item) {
+        const existing = this.cart.find(i => i.id === item.id);
+        if (existing) {
+            existing.quantity++;
+        } else {
+            this.cart.push({ ...item, quantity: 1 });
+        }
+    },
+    
+    removeFromCart(itemId) {
+        this.cart = this.cart.filter(i => i.id !== itemId);
+    },
+    
+    get cartTotal() {
+        return this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    },
+    
+    get cartCount() {
+        return this.cart.reduce((sum, item) => sum + item.quantity, 0);
+    }
+}">
+
+    <!-- SIDEBAR NAVIGATION FOR PC -->
+    <div class="md:flex">
+        <!-- Sidebar Overlay for Mobile -->
+        <div x-show="sidebarOpen" @click="sidebarOpen = false" class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"></div>
+        
+        <!-- Sidebar -->
+        <div :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed md:fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-navy-800 to-navy-900 text-white transform transition-transform duration-300 ease-in-out sidebar-translate md:translate-x-0 md:flex md:flex-col md:h-screen">
+            <!-- Sidebar Header -->
+            <div class="p-6 border-b border-navy-700">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 bg-gold-500 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-hotel text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-xl">Grand Luxe</h2>
+                        <p class="text-navy-200 text-xs">Hotel & Resort</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-3 p-3 bg-navy-700/50 rounded-xl">
+                    <div class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-user text-gold-400"></i>
+                    </div>
+                    <div>
+                        <p class="font-semibold">Sarah Johnson</p>
+                        <p class="text-navy-200 text-xs">Room 305</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar Menu -->
+            <div class="flex-1 p-4 space-y-2 overflow-y-auto">
+                <button @click="currentScreen = 'dashboard'; sidebarOpen = false" :class="currentScreen === 'dashboard' ? 'bg-navy-700 text-gold-400' : 'hover:bg-navy-700/50'" class="w-full flex items-center gap-3 p-3 rounded-xl transition">
+                    <i class="fas fa-home w-5 text-center"></i>
+                    <span>Dashboard</span>
+                </button>
+                
+                <button @click="currentScreen = 'room-booking'; sidebarOpen = false" :class="currentScreen === 'room-booking' ? 'bg-navy-700 text-gold-400' : 'hover:bg-navy-700/50'" class="w-full flex items-center gap-3 p-3 rounded-xl transition">
+                    <i class="fas fa-bed w-5 text-center"></i>
+                    <span>Book Room</span>
+                </button>
+                
+                <button @click="currentScreen = 'food-ordering'; sidebarOpen = false" :class="['food-ordering', 'food-details', 'cart', 'order-tracking'].includes(currentScreen) ? 'bg-navy-700 text-gold-400' : 'hover:bg-navy-700/50'" class="w-full flex items-center gap-3 p-3 rounded-xl transition">
+                    <i class="fas fa-utensils w-5 text-center"></i>
+                    <span>Order Food</span>
+                    <span x-show="cartCount > 0" x-text="cartCount" class="ml-auto bg-gold-500 text-white text-xs px-2 py-1 rounded-full"></span>
+                </button>
+                
+                <button @click="currentScreen = 'services'; sidebarOpen = false" :class="['services', 'service-details', 'service-tracking'].includes(currentScreen) ? 'bg-navy-700 text-gold-400' : 'hover:bg-navy-700/50'" class="w-full flex items-center gap-3 p-3 rounded-xl transition">
+                    <i class="fas fa-concierge-bell w-5 text-center"></i>
+                    <span>Services</span>
+                </button>
+                
+                <button @click="currentScreen = 'qr-code'; sidebarOpen = false" :class="currentScreen === 'qr-code' ? 'bg-navy-700 text-gold-400' : 'hover:bg-navy-700/50'" class="w-full flex items-center gap-3 p-3 rounded-xl transition">
+                    <i class="fas fa-qrcode w-5 text-center"></i>
+                    <span>Room Access</span>
+                </button>
+                
+                <button @click="currentScreen = 'wallet'; sidebarOpen = false" :class="currentScreen === 'wallet' ? 'bg-navy-700 text-gold-400' : 'hover:bg-navy-700/50'" class="w-full flex items-center gap-3 p-3 rounded-xl transition">
+                    <i class="fas fa-wallet w-5 text-center"></i>
+                    <span>Wallet</span>
+                </button>
+                
+                <button @click="currentScreen = 'profile'; sidebarOpen = false" :class="currentScreen === 'profile' ? 'bg-navy-700 text-gold-400' : 'hover:bg-navy-700/50'" class="w-full flex items-center gap-3 p-3 rounded-xl transition">
+                    <i class="fas fa-user w-5 text-center"></i>
+                    <span>Profile</span>
+                </button>
+            </div>
+            
+            <!-- Sidebar Footer -->
+            <div class="p-4 border-t border-navy-700">
+                <button onclick="window.location.href='login.html'" class="w-full flex items-center gap-3 p-3 text-red-400 hover:bg-navy-700/50 rounded-xl transition">
+                    <i class="fas fa-sign-out-alt w-5 text-center"></i>
+                    <span>Sign Out</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="flex-1 md:ml-0 transition-all duration-300">
+            <!-- Mobile Header with Menu Button -->
+            <div class="md:hidden bg-gradient-to-r from-navy-700 to-navy-600 px-4 py-3 flex items-center justify-between">
+                <button @click="sidebarOpen = true" class="text-white">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20">
+                        <i class="fas fa-hotel text-white text-sm"></i>
+                    </div>
+                    <span class="text-white font-semibold">Grand Luxe</span>
+                </div>
+                <button @click="currentScreen = 'profile'" class="w-8 h-8 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20">
+                    <i class="fas fa-user text-white"></i>
+                </button>
+            </div>
+
+            <!-- DASHBOARD SCREEN -->
+            <div x-show="currentScreen === 'dashboard'" class="pb-20 md:pb-6 md:ml-64">
+                <div class="bg-gradient-to-r from-navy-700 to-navy-600 px-6 pt-12 pb-8 rounded-b-3xl shadow-lg md:rounded-none md:pt-8">
+                    <div class="hidden md:flex items-center justify-between mb-6">
+                        <div>
+                            <p class="text-navy-100 text-sm mb-1">Welcome back,</p>
+                            <h1 class="text-2xl font-bold text-white">Sarah Johnson</h1>
+                        </div>
+                        <button @click="currentScreen = 'profile'" class="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20">
+                            <i class="fas fa-user text-white"></i>
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-5 shadow-xl">
+                        <div class="flex items-start justify-between mb-4">
+                            <div>
+                                <p class="text-xs font-medium text-gray-500 mb-1">CURRENT STAY</p>
+                                <h3 class="text-2xl font-bold text-navy-700">Room 305</h3>
+                            </div>
+                            <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">Active</span>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <div>
+                                <p class="text-gray-500 text-xs mb-1">Check-in</p>
+                                <p class="font-semibold text-navy-700">Dec 15, 2024</p>
+                            </div>
+                            <div class="text-center px-4">
+                                <i class="fas fa-arrow-right text-gold-500"></i>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-gray-500 text-xs mb-1">Check-out</p>
+                                <p class="font-semibold text-navy-700">Dec 20, 2024</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-6 -mt-6">
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <button @click="currentScreen = 'wallet'" class="bg-gradient-to-br from-gold-500 to-gold-600 rounded-2xl p-5 shadow-lg text-left transform hover:scale-[1.02] transition active:scale-[0.98]">
+                            <i class="fas fa-wallet text-white text-2xl mb-3"></i>
+                            <p class="text-white/80 text-xs mb-1">Wallet Balance</p>
+                            <p class="text-white text-xl font-bold">$450.00</p>
+                        </button>
+
+                        <button @click="currentScreen = 'qr-code'" class="bg-white rounded-2xl p-5 shadow-lg text-left border-2 border-navy-100 transform hover:scale-[1.02] transition active:scale-[0.98]">
+                            <i class="fas fa-qrcode text-navy-600 text-2xl mb-3"></i>
+                            <p class="text-gray-600 text-xs mb-1">Room Access</p>
+                            <p class="text-navy-700 text-xl font-bold">QR Code</p>
+                        </button>
+                    </div>
+
+                    <div class="mb-6">
+                        <h3 class="text-lg font-bold text-navy-700 mb-4">Quick Actions</h3>
+                        <div class="grid grid-cols-3 gap-3">
+                            <button @click="currentScreen = 'room-booking'" class="bg-white rounded-2xl p-4 shadow-md text-center transform hover:scale-[1.02] transition active:scale-[0.98]">
+                                <div class="w-12 h-12 bg-navy-100 rounded-xl mx-auto mb-2 flex items-center justify-center">
+                                    <i class="fas fa-bed text-navy-600 text-xl"></i>
+                                </div>
+                                <p class="text-xs font-semibold text-navy-700">Book Room</p>
+                            </button>
+
+                            <button @click="currentScreen = 'food-ordering'" class="bg-white rounded-2xl p-4 shadow-md text-center transform hover:scale-[1.02] transition active:scale-[0.98]">
+                                <div class="w-12 h-12 bg-gold-100 rounded-xl mx-auto mb-2 flex items-center justify-center">
+                                    <i class="fas fa-utensils text-gold-600 text-xl"></i>
+                                </div>
+                                <p class="text-xs font-semibold text-navy-700">Order Food</p>
+                            </button>
+
+                            <button @click="currentScreen = 'services'" class="bg-white rounded-2xl p-4 shadow-md text-center transform hover:scale-[1.02] transition active:scale-[0.98]">
+                                <div class="w-12 h-12 bg-green-100 rounded-xl mx-auto mb-2 flex items-center justify-center">
+                                    <i class="fas fa-concierge-bell text-green-600 text-xl"></i>
+                                </div>
+                                <p class="text-xs font-semibold text-navy-700">Services</p>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-bold text-navy-700 mb-4">Hotel Services</h3>
+                        <div class="grid grid-cols-3 gap-3">
+                            <template x-for="service in services.slice(0, 9)" :key="service.id">
+                                <button @click="selectedService = service; currentScreen = 'service-details'" class="bg-white rounded-xl p-4 shadow-sm text-center hover:shadow-md transition">
+                                    <i :class="`fas ${service.icon} text-${service.color}-600 text-2xl mb-2`"></i>
+                                    <p class="text-xs font-medium text-gray-700" x-text="service.name"></p>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QR CODE SCREEN -->
+            <div x-show="currentScreen === 'qr-code'" class="min-h-screen md:min-h-0 bg-gradient-to-br from-navy-700 via-navy-600 to-navy-800 px-6 py-12 md:py-8" class="pb-20 md:pb-6 md:ml-64">
+                <div class="max-w-md mx-auto">
+                    <button @click="currentScreen = 'dashboard'" class="text-white mb-6 flex items-center gap-2 hover:text-gold-400 transition">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back to Dashboard</span>
+                    </button>
+
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-white mb-2">Room Access</h2>
+                        <p class="text-navy-100">Scan to unlock your room</p>
+                    </div>
+
+                    <div class="bg-white rounded-3xl p-8 shadow-2xl mb-6">
+                        <div class="bg-gray-50 rounded-2xl p-8 mb-6">
+                            <div class="w-64 h-64 mx-auto bg-white rounded-xl shadow-inner flex items-center justify-center border-4 border-navy-700">
+                                <div class="text-center">
+                                    <i class="fas fa-qrcode text-navy-700 text-8xl mb-2"></i>
+                                    <p class="text-xs text-gray-500 font-medium">QR CODE</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3 mb-6">
+                            <div class="flex items-center justify-between py-2">
+                                <span class="text-gray-600 text-sm">Guest Name</span>
+                                <span class="font-semibold text-navy-700">Sarah Johnson</span>
+                            </div>
+                            <div class="flex items-center justify-between py-2">
+                                <span class="text-gray-600 text-sm">Room Number</span>
+                                <span class="font-semibold text-navy-700">305</span>
+                            </div>
+                            <div class="flex items-center justify-between py-2">
+                                <span class="text-gray-600 text-sm">Valid Until</span>
+                                <span class="font-semibold text-navy-700">Dec 20, 2024</span>
+                            </div>
+                            <div class="flex items-center justify-between py-2">
+                                <span class="text-gray-600 text-sm">Status</span>
+                                <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">Active</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-navy-50 rounded-xl p-4 flex items-start gap-3">
+                            <i class="fas fa-shield-alt text-navy-600 text-xl mt-0.5"></i>
+                            <div>
+                                <p class="text-sm font-semibold text-navy-700 mb-1">Secure Access</p>
+                                <p class="text-xs text-gray-600">This QR code refreshes every 2 minutes for your security</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="w-full bg-white/10 backdrop-blur-sm text-white py-4 rounded-xl font-semibold border border-white/20 hover:bg-white/20 transition">
+                        <i class="fas fa-sync-alt mr-2"></i>
+                        Refresh Code
+                    </button>
+                </div>
+            </div>
+
+            <!-- ROOM BOOKING SCREEN -->
+            <div x-show="currentScreen === 'room-booking'" class="pb-20 md:pb-6 md:ml-64">
+                <div class="bg-gradient-to-r from-navy-700 to-navy-600 px-6 pt-12 pb-6 rounded-b-3xl shadow-lg md:rounded-none md:pt-8">
+                    <button @click="currentScreen = 'dashboard'" class="text-white mb-4 flex items-center gap-2 hover:text-gold-400 transition">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back</span>
+                    </button>
+                    <h2 class="text-3xl font-bold text-white mb-2">Book a Room</h2>
+                    <p class="text-navy-100">Find your perfect stay</p>
+                </div>
+
+                <div class="px-6 -mt-4">
+                    <div class="bg-white rounded-2xl p-4 shadow-lg mb-6">
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div>
+                                <label class="text-xs font-medium text-gray-600 mb-1 block">Check-in</label>
+                                <input type="date" x-model="bookingDates.checkin" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold-500">
+                            </div>
+                            <div>
+                                <label class="text-xs font-medium text-gray-600 mb-1 block">Check-out</label>
+                                <input type="date" x-model="bookingDates.checkout" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold-500">
+                            </div>
+                        </div>
+                        <div class="flex gap-2 overflow-x-auto pb-2">
+                            <button class="px-4 py-2 bg-navy-700 text-white text-sm font-medium rounded-lg whitespace-nowrap">All Rooms</button>
+                            <button class="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg whitespace-nowrap hover:bg-gray-200 transition">Deluxe</button>
+                            <button class="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg whitespace-nowrap hover:bg-gray-200 transition">Suite</button>
+                            <button class="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg whitespace-nowrap hover:bg-gray-200 transition">Presidential</button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <template x-for="room in rooms" :key="room.id">
+                            <button @click="selectedRoom = room; currentScreen = 'room-details'" class="block w-full bg-white rounded-2xl shadow-md overflow-hidden text-left hover:shadow-lg transition">
+                                <img :src="room.image" :alt="room.name" class="w-full h-48 object-cover">
+                                <div class="p-5">
+                                    <div class="flex items-start justify-between mb-2">
+                                        <div>
+                                            <h3 class="text-lg font-bold text-navy-700 mb-1" x-text="room.name"></h3>
+                                            <p class="text-sm text-gray-600" x-text="`${room.view} • ${room.size}`"></p>
+                                        </div>
+                                        <span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-lg">Available</span>
+                                    </div>
+                                    <div class="flex items-center gap-3 mb-3 text-xs text-gray-600">
+                                        <span><i class="fas fa-user mr-1"></i><span x-text="room.guests"></span> Guests</span>
+                                        <span><i class="fas fa-bed mr-1"></i><span x-text="room.bed"></span></span>
+                                        <span><i class="fas fa-wifi mr-1"></i>Free WiFi</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-2xl font-bold text-navy-700">$<span x-text="room.price"></span><span class="text-sm font-normal text-gray-500">/night</span></p>
+                                        </div>
+                                        <i class="fas fa-arrow-right text-gold-500"></i>
+                                    </div>
+                                </div>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROOM DETAILS SCREEN -->
+            <div x-show="currentScreen === 'room-details' && selectedRoom" class="pb-20 md:pb-6 md:ml-64">
+                <div class="relative">
+                    <img :src="selectedRoom?.image" class="w-full h-80 object-cover">
+                    <button @click="currentScreen = 'room-booking'" class="absolute top-6 left-6 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg">
+                        <i class="fas fa-arrow-left text-navy-700"></i>
+                    </button>
+                </div>
+
+                <div class="px-6 -mt-8">
+                    <div class="bg-white rounded-3xl p-6 shadow-2xl mb-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div>
+                                <h2 class="text-2xl font-bold text-navy-700 mb-2" x-text="selectedRoom?.name"></h2>
+                                <p class="text-gray-600" x-text="`${selectedRoom?.view} • ${selectedRoom?.size}`"></p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-3xl font-bold text-navy-700">$<span x-text="selectedRoom?.price"></span></p>
+                                <p class="text-sm text-gray-500">per night</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-4 mb-6 text-sm text-gray-600">
+                            <span><i class="fas fa-user mr-2 text-navy-600"></i><span x-text="selectedRoom?.guests"></span> Guests</span>
+                            <span><i class="fas fa-bed mr-2 text-navy-600"></i><span x-text="selectedRoom?.bed"></span></span>
+                            <span><i class="fas fa-ruler-combined mr-2 text-navy-600"></i><span x-text="selectedRoom?.size"></span></span>
+                        </div>
+
+                        <div class="mb-6">
+                            <h3 class="text-lg font-bold text-navy-700 mb-3">Amenities</h3>
+                            <div class="grid grid-cols-2 gap-3">
+                                <template x-for="amenity in selectedRoom?.amenities" :key="amenity">
+                                    <div class="flex items-center gap-2 text-sm text-gray-700">
+                                        <i class="fas fa-check-circle text-green-500"></i>
+                                        <span x-text="amenity"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <button @click="currentScreen = 'booking-payment'" class="w-full bg-gradient-to-r from-navy-600 to-navy-700 text-white py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition transform hover:scale-[1.02] active:scale-[0.98]">
+                            Book Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOOKING PAYMENT SCREEN -->
+            <div x-show="currentScreen === 'booking-payment'" class="pb-20 md:pb-6 md:ml-64">
+                <div class="bg-gradient-to-r from-navy-700 to-navy-600 px-6 pt-12 pb-6 rounded-b-3xl shadow-lg md:rounded-none md:pt-8">
+                    <button @click="currentScreen = 'room-details'" class="text-white mb-4 flex items-center gap-2 hover:text-gold-400 transition">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back</span>
+                    </button>
+                    <h2 class="text-3xl font-bold text-white mb-2">Payment</h2>
+                    <p class="text-navy-100">Complete your booking</p>
+                </div>
+
+                <div class="px-6 -mt-4">
+                    <div class="bg-white rounded-2xl p-6 shadow-lg mb-6">
+                        <h3 class="text-lg font-bold text-navy-700 mb-4">Booking Summary</h3>
+                        <div class="space-y-3 mb-4 pb-4 border-b border-gray-200">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Room</span>
+                                <span class="font-semibold text-navy-700" x-text="selectedRoom?.name"></span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Check-in</span>
+                                <span class="font-semibold text-navy-700" x-text="bookingDates.checkin || 'Dec 15, 2024'"></span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Check-out</span>
+                                <span class="font-semibold text-navy-700" x-text="bookingDates.checkout || 'Dec 20, 2024'"></span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Nights</span>
+                                <span class="font-semibold text-navy-700">5</span>
+                            </div>
+                        </div>
+                        <div class="space-y-2 mb-4 pb-4 border-b border-gray-200">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Room Rate (5 nights)</span>
+                                <span class="text-navy-700">$<span x-text="(selectedRoom?.price || 0) * 5"></span></span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Service Fee</span>
+                                <span class="text-navy-700">$50</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Taxes</span>
+                                <span class="text-navy-700">$<span x-text="Math.round((selectedRoom?.price || 0) * 5 * 0.1)"></span></span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-lg font-bold text-navy-700">Total</span>
+                            <span class="text-2xl font-bold text-navy-700">$<span x-text="(selectedRoom?.price || 0) * 5 + 50 + Math.round((selectedRoom?.price || 0) * 5 * 0.1)"></span></span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 shadow-lg mb-6">
+                        <h3 class="text-lg font-bold text-navy-700 mb-4">Payment Method</h3>
+                        <div class="space-y-3">
+                            <button class="w-full flex items-center justify-between p-4 border-2 border-gold-500 bg-gold-50 rounded-xl">
+                                <div class="flex items-center gap-3">
+                                    <i class="fas fa-wallet text-gold-600 text-xl"></i>
+                                    <div class="text-left">
+                                        <p class="font-semibold text-navy-700">Wallet</p>
+                                        <p class="text-xs text-gray-600">Balance: $450.00</p>
+                                    </div>
+                                </div>
+                                <i class="fas fa-check-circle text-gold-600"></i>
+                            </button>
+                            <button class="w-full flex items-center justify-between p-4 border-2 border-gray-200 rounded-xl hover:border-navy-300 transition">
+                                <div class="flex items-center gap-3">
+                                    <i class="fas fa-credit-card text-navy-600 text-xl"></i>
+                                    <div class="text-left">
+                                        <p class="font-semibold text-navy-700">Credit Card</p>
+                                        <p class="text-xs text-gray-600">Pay with card</p>
+                                    </div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button @click="currentScreen = 'booking-success'" class="w-full bg-gradient-to-r from-navy-600 to-navy-700 text-white py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition transform hover:scale-[1.02] active:scale-[0.98]">
+                        Confirm & Pay
+                    </button>
+                </div>
+            </div>
+
+            <!-- BOOKING SUCCESS SCREEN -->
+            <div x-show="currentScreen === 'booking-success'" class="min-h-screen md:min-h-0 bg-gradient-to-br from-navy-700 via-navy-600 to-navy-800 px-6 py-12 flex items-center justify-center">
+                <div class="max-w-md mx-auto text-center">
+                    <div class="w-24 h-24 bg-green-500 rounded-full mx-auto mb-6 flex items-center justify-center shadow-2xl animate-bounce">
+                        <i class="fas fa-check text-white text-4xl"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-white mb-4">Booking Confirmed!</h2>
+                    <p class="text-navy-100 mb-8">Your room has been successfully booked</p>
+
+                    <div class="bg-white rounded-3xl p-8 shadow-2xl mb-6">
+                        <div class="bg-gray-50 rounded-2xl p-6 mb-6">
+                            <div class="w-48 h-48 mx-auto bg-white rounded-xl shadow-inner flex items-center justify-center border-4 border-navy-700">
+                                <div class="text-center">
+                                    <i class="fas fa-qrcode text-navy-700 text-6xl mb-2"></i>
+                                    <p class="text-xs text-gray-500 font-medium">ACCESS CODE</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Booking ID</span>
+                                <span class="font-semibold text-navy-700">#BK12345</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Room</span>
+                                <span class="font-semibold text-navy-700" x-text="selectedRoom?.name"></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Check-in</span>
+                                <span class="font-semibold text-navy-700" x-text="bookingDates.checkin || 'Dec 15, 2024'"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button @click="currentScreen = 'dashboard'" class="w-full bg-white text-navy-700 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition transform hover:scale-[1.02] active:scale-[0.98] mb-3">
+                        Back to Dashboard
+                    </button>
+                    <button @click="currentScreen = 'qr-code'" class="w-full bg-white/10 backdrop-blur-sm text-white py-4 rounded-xl font-semibold border border-white/20 hover:bg-white/20 transition">
+                        View QR Code
+                    </button>
+                </div>
+            </div>
+
+            <!-- SERVICES SCREEN -->
+            <div x-show="currentScreen === 'services'" class="pb-20 md:pb-6 md:ml-64">
+                <div class="bg-gradient-to-r from-navy-700 to-navy-600 px-6 pt-12 pb-6 rounded-b-3xl shadow-lg md:rounded-none md:pt-8">
+                    <button @click="currentScreen = 'dashboard'" class="text-white mb-4 flex items-center gap-2 hover:text-gold-400 transition">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back</span>
+                    </button>
+                    <h2 class="text-3xl font-bold text-white mb-2">Hotel Services</h2>
+                    <p class="text-navy-100">Everything you need for a perfect stay</p>
+                </div>
+
+                <div class="px-6 -mt-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <template x-for="service in services" :key="service.id">
+                            <button @click="selectedService = service; currentScreen = 'service-details'" class="bg-white rounded-2xl p-5 shadow-md text-left hover:shadow-lg transition">
+                                <div :class="`w-12 h-12 bg-${service.color}-100 rounded-xl mb-3 flex items-center justify-center`">
+                                    <i :class="`fas ${service.icon} text-${service.color}-600 text-2xl`"></i>
+                                </div>
+                                <h3 class="font-bold text-navy-700 mb-1" x-text="service.name"></h3>
+                                <p class="text-xs text-gray-600 mb-2" x-text="service.duration"></p>
+                                <p class="text-lg font-bold text-navy-700" x-text="service.price === 0 ? 'Free' : `$${service.price}`"></p>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SERVICE DETAILS SCREEN -->
+            <div x-show="currentScreen === 'service-details' && selectedService" class="pb-20 md:pb-6 md:ml-64">
+                <div class="bg-gradient-to-r from-navy-700 to-navy-600 px-6 pt-12 pb-6 rounded-b-3xl shadow-lg md:rounded-none md:pt-8">
+                    <button @click="currentScreen = 'services'" class="text-white mb-4 flex items-center gap-2 hover:text-gold-400 transition">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back</span>
+                    </button>
+                    <div :class="`w-16 h-16 bg-${selectedService?.color}-500 rounded-2xl mb-4 flex items-center justify-center shadow-lg`">
+                        <i :class="`fas ${selectedService?.icon} text-white text-3xl`"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-white mb-2" x-text="selectedService?.name"></h2>
+                    <p class="text-navy-100" x-text="selectedService?.description"></p>
+                </div>
+
+                <div class="px-6 -mt-4">
+                    <div class="bg-white rounded-2xl p-6 shadow-lg mb-6">
+                        <div class="flex items-center justify-between mb-6 pb-6 border-b border-gray-200">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">Duration</p>
+                                <p class="text-lg font-bold text-navy-700" x-text="selectedService?.duration"></p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm text-gray-600 mb-1">Price</p>
+                                <p class="text-2xl font-bold text-navy-700" x-text="selectedService?.price === 0 ? 'Free' : `$${selectedService?.price}`"></p>
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <h3 class="text-lg font-bold text-navy-700 mb-4">Schedule Service</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Date</label>
+                                    <input type="date" x-model="serviceBooking.date" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Time</label>
+                                    <input type="time" x-model="serviceBooking.time" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button @click="currentScreen = 'service-tracking'" class="w-full bg-gradient-to-r from-navy-600 to-navy-700 text-white py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition transform hover:scale-[1.02] active:scale-[0.98]">
+                            Request Service
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SERVICE TRACKING SCREEN -->
+            <div x-show="currentScreen === 'service-tracking'" class="pb-20 md:pb-6 md:ml-64">
+                <div class="bg-gradient-to-r from-navy-700 to-navy-600 px-6 pt-12 pb-6 rounded-b-3xl shadow-lg md:rounded-none md:pt-8">
+                    <button @click="currentScreen = 'services'" class="text-white mb-4 flex items-center gap-2 hover:text-gold-400 transition">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back</span>
+                    </button>
+                    <h2 class="text-3xl font-bold text-white mb-2">Service Tracking</h2>
+                    <p class="text-navy-100">Track your service request</p>
+                </div>
+
+                <div class="px-6 -mt-4">
+                    <div class="bg-white rounded-2xl p-6 shadow-lg mb-6">
+                        <div class="text-center mb-6">
+                            <div class="w-20 h-20 bg-green-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+                                <i class="fas fa-check text-green-600 text-3xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-navy-700 mb-2">Request Confirmed</h3>
+                            <p class="text-gray-600">Your service has been scheduled</p>
+                        </div>
+
+                        <div class="space-y-4 mb-6">
+                            <div class="flex items-start gap-4">
+                                <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-check text-white"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-navy-700">Request Received</p>
+                                    <p class="text-sm text-gray-600">Your request has been confirmed</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-clock text-white"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-navy-700">In Progress</p>
+                                    <p class="text-sm text-gray-600">Staff is on the way</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-flag text-white"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-400">Completed</p>
+                                    <p class="text-sm text-gray-400">Service will be completed soon</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-navy-50 rounded-xl p-4 mb-6">
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="text-gray-600">Service</span>
+                                <span class="font-semibold text-navy-700" x-text="selectedService?.name"></span>
+                            </div>
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="text-gray-600">Scheduled</span>
+                                <span class="font-semibold text-navy-700" x-text="`${serviceBooking.date || 'Today'} at ${serviceBooking.time || '2:00 PM'}`"></span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Room</span>
+                                <span class="font-semibold text-navy-700">305</span>
+                            </div>
+                        </div>
+
+                        <button @click="currentScreen = 'dashboard'" class="w-full bg-gradient-to-r from-navy-600 to-navy-700 text-white py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition transform hover:scale-[1.02] active:scale-[0.98]">
+                            Back to Dashboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FOOD ORDERING SCREEN -->
+            <div x-show="currentScreen === 'food-ordering'" class="pb-20 md:pb-6 md:ml-64">
+                <div class="bg-gradient-to-r from-navy-700 to-navy-600 px-6 pt-12 pb-6 rounded-b-3xl shadow-lg md:rounded-none md:pt-8">
+                    <button @click="currentScreen = 'dashboard'" class="text-white mb-4 flex items-center gap-2 hover:text-gold-400 transition">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back</span>
+                    </button>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-3xl font-bold text-white mb-2">Order Food</h2>
+                            <p class="text-navy-100">Delicious meals delivered to your room</p>
+                        </div>
+                        <button @click="currentScreen = 'cart'" class="relative w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20">
+                            <i class="fas fa-shopping-cart text-white"></i>
+                            <span x-show="cartCount > 0" x-text="cartCount" class="absolute -top-1 -right-1 w-5 h-5 bg-gold-500 text-white text-xs font-bold rounded-full flex items-center justify-center"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="px-6 -mt-4">
+                    <div class="flex gap-2 overflow-x-auto pb-4 mb-6">
+                        <button class="px-4 py-2 bg-white text-navy-700 text-sm font-medium rounded-lg whitespace-nowrap shadow-md">All Items</button>
+                        <button class="px-4 py-2 bg-white/50 text-white text-sm font-medium rounded-lg whitespace-nowrap">Appetizers</button>
+                        <button class="px-4 py-2 bg-white/50 text-white text-sm font-medium rounded-lg whitespace-nowrap">Main Course</button>
+                        <button class="px-4 py-2 bg-white/50 text-white text-sm font-medium rounded-lg whitespace-nowrap">Desserts</button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <template x-for="food in foodMenu" :key="food.id">
+                            <button @click="selectedFood = food; currentScreen = 'food-details'" class="bg-white rounded-2xl shadow-md overflow-hidden text-left hover:shadow-lg transition">
+                                <img :src="food.image" :alt="food.name" class="w-full h-32 object-cover">
+                                <div class="p-4">
+                                    <h3 class="font-bold text-navy-700 mb-1" x-text="food.name"></h3>
+                                    <p class="text-xs text-gray-600 mb-2" x-text="food.category"></p>
+                                    <div class="flex items-center justify-between">
+                                        <p class="text-lg font-bold text-navy-700">$<span x-text="food.price"></span></p>
+                                        <div class="flex items-center gap-1">
+                                            <i class="fas fa-star text-gold-500 text-xs"></i>
+                                            <span class="text-xs font-semibold text-gray-700" x-text="food.rating"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FOOD DETAILS SCREEN -->
+            <div x-show="currentScreen === 'food-details' && selectedFood" class="pb-20 md:pb-6 md:ml-64">
+                <div class="relative">
+                    <img :src="selectedFood?.image" class="w-full h-80 object-cover">
+                    <button @click="currentScreen = 'food-ordering'" class="absolute top-6 left-6 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg">
+                        <i class="fas fa-arrow-left text-navy-700"></i>
+                    </button>
+                    <button @click="currentScreen = 'cart'" class="absolute top-6 right-6 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg">
+                        <i class="fas fa-shopping-cart text-navy-700"></i>
+                        <span x-show="cartCount > 0" x-text="cartCount" class="absolute -top-1 -right-1 w-5 h-5 bg-gold-500 text-white text-xs font-bold rounded-full flex items-center justify-center"></span>
+                    </button>
+                </div>
+
+                <div class="px-6 -mt-8">
+                    <div class="bg-white rounded-3xl p-6 shadow-2xl mb-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div>
+                                <h2 class="text-2xl font-bold text-navy-700 mb-2" x-text="selectedFood?.name"></h2>
+                                <p class="text-gray-600 mb-2" x-text="selectedFood?.category"></p>
+                                <div class="flex items-center gap-2">
+                                    <div class="flex items-center gap-1">
+                                        <i class="fas fa-star text-gold-500"></i>
+                                        <span class="font-semibold text-navy-700" x-text="selectedFood?.rating"></span>
+                                    </div>
+                                    <span class="text-gray-400">•</span>
+                                    <span class="text-sm text-gray-600">30 min delivery</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-3xl font-bold text-navy-700">$<span x-text="selectedFood?.price"></span></p>
+                            </div>
+                        </div>
+
+                        <p class="text-gray-600 mb-6" x-text="selectedFood?.description"></p>
+
+                        <div class="flex gap-3">
+                            <button @click="addToCart(selectedFood); currentScreen = 'food-ordering'" class="flex-1 bg-gradient-to-r from-navy-600 to-navy-700 text-white py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition transform hover:scale-[1.02] active:scale-[0.98]">
+                                Add to Cart
+                            </button>
+                            <button @click="addToCart(selectedFood); currentScreen = 'cart'" class="px-6 bg-gold-500 text-white py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition">
+                                <i class="fas fa-shopping-cart"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CART SCREEN -->
+            <div x-show="currentScreen === 'cart'" class="pb-20 md:pb-6 md:ml-64">
+                <div class="bg-gradient-to-r from-navy-700 to-navy-600 px-6 pt-12 pb-6 rounded-b-3xl shadow-lg md:rounded-none md:pt-8">
+                    <button @click="currentScreen = 'food-ordering'" class="text-white mb-4 flex items-center gap-2 hover:text-gold-400 transition">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back</span>
+                    </button>
+                    <h2 class="text-3xl font-bold text-white mb-2">Your Cart</h2>
+                    <p class="text-navy-100" x-text="`${cartCount} items`"></p>
+                </div>
+
+                <div class="px-6 -mt-4">
+                    <div x-show="cart.length === 0" class="bg-white rounded-2xl p-12 shadow-lg text-center">
+                        <i class="fas fa-shopping-cart text-gray-300 text-6xl mb-4"></i>
+                        <p class="text-gray-600 mb-4">Your cart is empty</p>
+                        <button @click="currentScreen = 'food-ordering'" class="px-6 py-3 bg-navy-700 text-white rounded-xl font-semibold hover:bg-navy-800 transition">
+                            Browse Menu
+                        </button>
+                    </div>
+
+                    <div x-show="cart.length > 0" class="space-y-4 mb-6">
+                        <template x-for="item in cart" :key="item.id">
+                            <div class="bg-white rounded-2xl p-4 shadow-md flex items-center gap-4">
+                                <img :src="item.image" :alt="item.name" class="w-20 h-20 object-cover rounded-xl">
+                                <div class="flex-1">
+                                    <h3 class="font-bold text-navy-700 mb-1" x-text="item.name"></h3>
+                                    <p class="text-sm text-gray-600 mb-2">$<span x-text="item.price"></span> each</p>
+                                    <div class="flex items-center gap-3">
+                                        <button @click="item.quantity > 1 ? item.quantity-- : removeFromCart(item.id)" class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200 transition">
+                                            <i class="fas fa-minus text-xs"></i>
+                                        </button>
+                                        <span class="font-semibold text-navy-700" x-text="item.quantity"></span>
+                                        <button @click="item.quantity++" class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200 transition">
+                                            <i class="fas fa-plus text-xs"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-lg font-bold text-navy-700">$<span x-text="item.price * item.quantity"></span></p>
+                                    <button @click="removeFromCart(item.id)" class="text-red-500 text-sm hover:text-red-600 transition">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div x-show="cart.length > 0" class="bg-white rounded-2xl p-6 shadow-lg mb-6">
+                        <h3 class="text-lg font-bold text-navy-700 mb-4">Delivery Options</h3>
+                        <div class="space-y-3 mb-6">
+                            <button class="w-full flex items-center justify-between p-4 border-2 border-gold-500 bg-gold-50 rounded-xl">
+                                <div class="flex items-center gap-3">
+                                    <i class="fas fa-door-open text-gold-600 text-xl"></i>
+                                    <div class="text-left">
+                                        <p class="font-semibold text-navy-700">Room Delivery</p>
+                                        <p class="text-xs text-gray-600">Deliver to Room 305</p>
+                                    </div>
+                                </div>
+                                <i class="fas fa-check-circle text-gold-600"></i>
+                            </button>
+                            <button class="w-full flex items-center justify-between p-4 border-2 border-gray-200 rounded-xl hover:border-navy-300 transition">
+                                <div class="flex items-center gap-3">
+                                    <i class="fas fa-utensils text-navy-600 text-xl"></i>
+                                    <div class="text-left">
+                                        <p class="font-semibold text-navy-700">Dine In</p>
+                                        <p class="text-xs text-gray-600">Eat at restaurant</p>
+                                    </div>
+                                </div>
+                            </button>
+                        </div>
+
+                        <div class="space-y-2 mb-4 pb-4 border-b border-gray-200">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Subtotal</span>
+                                <span class="text-navy-700">$<span x-text="cartTotal"></span></span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Delivery Fee</span>
+                                <span class="text-navy-700">$5</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center mb-6">
+                            <span class="text-lg font-bold text-navy-700">Total</span>
+                            <span class="text-2xl font-bold text-navy-700">$<span x-text="cartTotal + 5"></span></span>
+                        </div>
+
+                        <button @click="currentScreen = 'order-tracking'" class="w-full bg-gradient-to-r from-navy-600 to-navy-700 text-white py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition transform hover:scale-[1.02] active:scale-[0.98]">
+                            Place Order
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ORDER TRACKING SCREEN -->
+            <div x-show="currentScreen === 'order-tracking'" class="pb-20 md:pb-6 md:ml-64">
+                <div class="bg-gradient-to-r from-navy-700 to-navy-600 px-6 pt-12 pb-6 rounded-b-3xl shadow-lg md:rounded-none md:pt-8">
+                    <button @click="currentScreen = 'dashboard'" class="text-white mb-4 flex items-center gap-2 hover:text-gold-400 transition">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back</span>
+                    </button>
+                    <h2 class="text-3xl font-bold text-white mb-2">Order Tracking</h2>
+                    <p class="text-navy-100">Your order is being prepared</p>
+                </div>
+
+                <div class="px-6 -mt-4">
+                    <div class="bg-white rounded-2xl p-6 shadow-lg mb-6">
+                        <div class="text-center mb-6">
+                            <div class="w-20 h-20 bg-blue-100 rounded-full mx-auto mb-4 flex items-center justify-center animate-pulse">
+                                <i class="fas fa-utensils text-blue-600 text-3xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-navy-700 mb-2">Order Confirmed</h3>
+                            <p class="text-gray-600">Estimated delivery: 30 minutes</p>
+                        </div>
+
+                        <div class="space-y-4 mb-6">
+                            <div class="flex items-start gap-4">
+                                <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-check text-white"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-navy-700">Order Placed</p>
+                                    <p class="text-sm text-gray-600">Your order has been confirmed</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 animate-pulse">
+                                    <i class="fas fa-fire text-white"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-navy-700">Preparing</p>
+                                    <p class="text-sm text-gray-600">Chef is preparing your meal</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-motorcycle text-white"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-400">On the Way</p>
+                                    <p class="text-sm text-gray-400">Delivering to your room</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-check-double text-white"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-400">Delivered</p>
+                                    <p class="text-sm text-gray-400">Enjoy your meal!</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-navy-50 rounded-xl p-4 mb-6">
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="text-gray-600">Order ID</span>
+                                <span class="font-semibold text-navy-700">#FD12345</span>
+                            </div>
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="text-gray-600">Items</span>
+                                <span class="font-semibold text-navy-700" x-text="`${cartCount} items`"></span>
+                            </div>
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="text-gray-600">Total</span>
+                                <span class="font-semibold text-navy-700">$<span x-text="cartTotal + 5"></span></span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Delivery to</span>
+                                <span class="font-semibold text-navy-700">Room 305</span>
+                            </div>
+                        </div>
+
+                        <button @click="cart = []; currentScreen = 'dashboard'" class="w-full bg-gradient-to-r from-navy-600 to-navy-700 text-white py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition transform hover:scale-[1.02] active:scale-[0.98]">
+                            Back to Dashboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WALLET SCREEN -->
+            <div x-show="currentScreen === 'wallet'" class="pb-20 md:pb-6 md:ml-64">
+                <div class="bg-gradient-to-r from-navy-700 to-navy-600 px-6 pt-12 pb-6 rounded-b-3xl shadow-lg md:rounded-none md:pt-8">
+                    <button @click="currentScreen = 'dashboard'" class="text-white mb-4 flex items-center gap-2 hover:text-gold-400 transition">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back</span>
+                    </button>
+                    <h2 class="text-3xl font-bold text-white mb-2">My Wallet</h2>
+                    <p class="text-navy-100">Manage your balance</p>
+                </div>
+
+                <div class="px-6 -mt-4">
+                    <div class="bg-gradient-to-br from-gold-500 to-gold-600 rounded-3xl p-8 shadow-2xl mb-6 text-white">
+                        <p class="text-gold-100 text-sm mb-2">Available Balance</p>
+                        <h3 class="text-5xl font-bold mb-6">$450.00</h3>
+                        <button class="bg-white text-gold-600 px-6 py-3 rounded-xl font-semibold hover:bg-gold-50 transition">
+                            <i class="fas fa-plus mr-2"></i>
+                            Add Funds
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 shadow-lg mb-6">
+                        <h3 class="text-lg font-bold text-navy-700 mb-4">Recent Transactions</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-utensils text-red-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-navy-700">Food Order</p>
+                                        <p class="text-xs text-gray-600">Dec 18, 2024</p>
+                                    </div>
+                                </div>
+                                <p class="font-bold text-red-600">-$85.00</p>
+                            </div>
+                            <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-plus text-green-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-navy-700">Added Funds</p>
+                                        <p class="text-xs text-gray-600">Dec 17, 2024</p>
+                                    </div>
+                                </div>
+                                <p class="font-bold text-green-600">+$500.00</p>
+                            </div>
+                            <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-spa text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-navy-700">Spa Service</p>
+                                        <p class="text-xs text-gray-600">Dec 16, 2024</p>
+                                    </div>
+                                </div>
+                                <p class="font-bold text-red-600">-$120.00</p>
+                            </div>
+                            <div class="flex items-center justify-between py-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-bed text-purple-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-navy-700">Room Booking</p>
+                                        <p class="text-xs text-gray-600">Dec 15, 2024</p>
+                                    </div>
+                                </div>
+                                <p class="font-bold text-red-600">-$1,250.00</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PROFILE SCREEN -->
+            <div x-show="currentScreen === 'profile'" class="pb-20 md:pb-6 md:ml-64">
+                <div class="bg-gradient-to-r from-navy-700 to-navy-600 px-6 pt-12 pb-12 rounded-b-3xl shadow-lg md:rounded-none md:pt-8">
+                    <button @click="currentScreen = 'dashboard'" class="text-white mb-6 flex items-center gap-2 hover:text-gold-400 transition">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back</span>
+                    </button>
+                    <div class="text-center">
+                        <div class="w-24 h-24 bg-white rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg">
+                            <i class="fas fa-user text-navy-700 text-3xl"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-white mb-1">Sarah Johnson</h2>
+                        <p class="text-navy-100 mb-4">sarah.johnson@email.com</p>
+                        <div class="inline-flex items-center gap-2 bg-gold-500 px-4 py-2 rounded-full">
+                            <i class="fas fa-crown text-white"></i>
+                            <span class="text-white font-semibold">Gold Member</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-6 -mt-8">
+                    <div class="bg-white rounded-2xl p-6 shadow-lg mb-6">
+                        <h3 class="text-lg font-bold text-navy-700 mb-4">Loyalty Points</h3>
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-3xl font-bold text-navy-700">2,450</p>
+                                <p class="text-sm text-gray-600">Total Points</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xl font-bold text-gold-600">550</p>
+                                <p class="text-sm text-gray-600">To Next Tier</p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
+                            <div class="bg-gradient-to-r from-gold-500 to-gold-600 h-3 rounded-full" style="width: 82%"></div>
+                        </div>
+                        <p class="text-xs text-gray-600 text-center">82% to Platinum Tier</p>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 shadow-lg mb-6">
+                        <h3 class="text-lg font-bold text-navy-700 mb-4">Personal Information</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                                <div class="flex items-center gap-3">
+                                    <i class="fas fa-envelope text-navy-600 w-5"></i>
+                                    <span class="text-gray-700">Email</span>
+                                </div>
+                                <span class="font-semibold text-navy-700">sarah.johnson@email.com</span>
+                            </div>
+                            <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                                <div class="flex items-center gap-3">
+                                    <i class="fas fa-phone text-navy-600 w-5"></i>
+                                    <span class="text-gray-700">Phone</span>
+                                </div>
+                                <span class="font-semibold text-navy-700">+1 (555) 123-4567</span>
+                            </div>
+                            <div class="flex items-center justify-between py-3">
+                                <div class="flex items-center gap-3">
+                                    <i class="fas fa-calendar text-navy-600 w-5"></i>
+                                    <span class="text-gray-700">Member Since</span>
+                                </div>
+                                <span class="font-semibold text-navy-700">Jan 2023</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 shadow-lg mb-6">
+                        <h3 class="text-lg font-bold text-navy-700 mb-4">Stay History</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                                <div>
+                                    <p class="font-semibold text-navy-700">Deluxe King Room</p>
+                                    <p class="text-sm text-gray-600">Dec 15-20, 2024</p>
+                                </div>
+                                <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">Current</span>
+                            </div>
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                                <div>
+                                    <p class="font-semibold text-navy-700">Executive Suite</p>
+                                    <p class="text-sm text-gray-600">Nov 10-15, 2024</p>
+                                </div>
+                                <span class="px-3 py-1 bg-gray-200 text-gray-700 text-xs font-semibold rounded-full">Completed</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="window.location.href='login.html'" class="w-full bg-red-500 text-white py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition transform hover:scale-[1.02] active:scale-[0.98]">
+                        <i class="fas fa-sign-out-alt mr-2"></i>
+                        Sign Out
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAVIGATION (Mobile Only) -->
+    <div x-show="['dashboard', 'room-booking', 'services', 'wallet', 'profile'].includes(currentScreen)" class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-3 shadow-lg">
+        <div class="flex items-center justify-around max-w-md mx-auto">
+            <button @click="currentScreen = 'dashboard'" :class="currentScreen === 'dashboard' ? 'text-navy-700' : 'text-gray-400 hover:text-navy-700'" class="flex flex-col items-center gap-1 transition">
+                <i class="fas fa-home text-xl"></i>
+                <span class="text-xs font-medium">Home</span>
+            </button>
+            <button @click="currentScreen = 'room-booking'" :class="currentScreen === 'room-booking' ? 'text-navy-700' : 'text-gray-400 hover:text-navy-700'" class="flex flex-col items-center gap-1 transition">
+                <i class="fas fa-bed text-xl"></i>
+                <span class="text-xs font-medium">Book</span>
+            </button>
+            <button @click="currentScreen = 'services'" :class="currentScreen === 'services' ? 'text-navy-700' : 'text-gray-400 hover:text-navy-700'" class="flex flex-col items-center gap-1 transition">
+                <i class="fas fa-concierge-bell text-xl"></i>
+                <span class="text-xs font-medium">Services</span>
+            </button>
+            <button @click="currentScreen = 'wallet'" :class="currentScreen === 'wallet' ? 'text-navy-700' : 'text-gray-400 hover:text-navy-700'" class="flex flex-col items-center gap-1 transition">
+                <i class="fas fa-wallet text-xl"></i>
+                <span class="text-xs font-medium">Wallet</span>
+            </button>
+            <button @click="currentScreen = 'profile'" :class="currentScreen === 'profile' ? 'text-navy-700' : 'text-gray-400 hover:text-navy-700'" class="flex flex-col items-center gap-1 transition">
+                <i class="fas fa-user text-xl"></i>
+                <span class="text-xs font-medium">Profile</span>
+            </button>
+        </div>
+    </div>
+
+</body>
+</html>
